@@ -5,7 +5,7 @@ var ColorImage = require("./ColorImageController")
 
 const api_url = 'https://api.telegram.org/'
 
-const WelcomeText = `Hi, I am Image Colorizer Bot.\nSend me a black and white image and I will color it for you.`
+const WelcomeText = `Hi, I am Demographic Recognition Bot.\nSend me an image and I will tell gender for you.`
 const ErrorText = `Error occurred processing this image. Please check your image and try again.`
 
 module.exports = function(incomingMessage) {
@@ -24,10 +24,21 @@ module.exports = function(incomingMessage) {
     .then((res) => {
         console.log("Sending photo to telegram")
 
-        sendPhoto(res.output_url, incomingMessage)
+        sendMessage(incomingMessage, res.output.faces[0].gender)
+        if(res.output.faces[0].age_range[0] == 0)
+            sendMessage(incomingMessage, 15)
+        else if(res.output.faces[0].age_range[0] < 25)
+            sendMessage(incomingMessage, res.output.faces[0].age_range[0])
+        else sendMessage(incomingMessage, res.output.faces[0].age_range[0]-10)
+
+        sendMessage(incomingMessage, res.output.faces[0].cultural_appearance)
+
+        if(res.output.faces[0].cultural_appearance_confidence == 0)
+            sendMessage(incomingMessage, 30)
+        else sendMessage(incomingMessage, res.output.faces[0].cultural_appearance_confidence*100)
     }) 
     .catch((err) => {   
-        console.log("Error in coloring image")
+        console.log("Error in finding gender of image")
         
         sendMessage(incomingMessage, ErrorText)
     })
@@ -45,7 +56,7 @@ async function getImageStream(FileID) {
             url: `${api_url}file/bot${process.env.BOT_TOKEN}/${getFileRes.data.result.file_path}`,
             responseType:'stream'
         })
-        debug(getFileRes.data.result)
+        console.log(getFileRes.data.result)
         
         return ImageStream.data
     } 
@@ -73,7 +84,6 @@ function sendPhoto(ImageURL, incomingMessage) {
         console.log(error.config.data)
     })
 } 
-
 function sendMessage(incomingMessage, MessageText) {
     axios.post(`${api_url}bot${process.env.BOT_TOKEN}/sendMessage`, {
         chat_id: incomingMessage.message.chat.id,

@@ -4,7 +4,7 @@ var request = require('request')
 module.exports = function(ImageStream) {
     return new Promise((resolve , reject ) => {
         request.post({
-            url: 'https://api.deepai.org/api/colorizer',
+            url: 'https://api.deepai.org/api/demographic-recognition',
             headers: {
                 'Api-Key': process.env.API_KEY
             },
@@ -17,7 +17,11 @@ module.exports = function(ImageStream) {
             }
 
             let apiAns = JSON.parse(body)
-            console.log(apiAns)
+            //console.log(apiAns[0].gender)
+            //console.log(apiAns.output.faces[0].gender)
+            //console.log(apiAns[0])
+            //console.log(apiAns.gender)
+
 
             if(apiAns.err)
                 return reject(apiAns)
